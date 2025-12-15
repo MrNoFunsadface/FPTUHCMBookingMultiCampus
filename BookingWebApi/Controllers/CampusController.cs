@@ -47,12 +47,4 @@ public class CampusController : ControllerBase
 
         return Ok(createdCampus);
     }
-
-    [HttpDelete("{id}")]
-    public async Task<IActionResult> DeleteCampus(int id)
-    {
-        var ok = await _service.DeleteCampus(id);
-        if (!ok) return NotFound();
-        return NoContent();
-    }
 }
