@@ -58,5 +58,71 @@ namespace Repositories.Repos
             IQueryable<User> user = _context.Set<User>();
             return await _paginationExtension.PaginateAsync(user, currentPage, pageSize);
         }
+
+        public Task<User?> GetById(int id)
+            => _context.Set<User>().FirstOrDefaultAsync(u => u.UserId == id);
+
+        public async Task<User?> Update(User user)
+        {
+            if (user == null) return null;
+
+            var existing = await _context.Set<User>().FirstOrDefaultAsync(u => u.UserId == user.UserId);
+            if (existing == null) return null;
+
+            existing.FullName = user.FullName;
+            existing.Email = user.Email;
+            existing.Role = user.Role;
+            existing.IsActive = user.IsActive;
+
+            await _context.SaveChangesAsync();
+            return existing;
+        }
+
+        public async Task<bool> Delete(int id)
+        {
+            var user = await _context.Set<User>().FirstOrDefaultAsync(u => u.UserId == id);
+            if (user == null) return false;
+
+            _context.Set<User>().Remove(user);
+            await _context.SaveChangesAsync();
+            return true;
+        }
+
+        public async Task<User?> Activate(int id)
+        {
+            var user = await _context.Set<User>().FirstOrDefaultAsync(u => u.UserId == id);
+            if (user == null) return null;
+
+            user.IsActive = true;
+            await _context.SaveChangesAsync();
+            return user;
+        }
+
+        public async Task<User?> Deactivate(int id)
+        {
+            var user = await _context.Set<User>().FirstOrDefaultAsync(u => u.UserId == id);
+            if (user == null) return null;
+
+            user.IsActive = false;
+            await _context.SaveChangesAsync();
+            return user;
+        }
+
+        public async Task<bool> ChangePassword(int userId, string currentPassword, string newPassword)
+        {
+            if (string.IsNullOrEmpty(newPassword)) return false;
+
+            var user = await _context.Set<User>().FirstOrDefaultAsync(u => u.UserId == userId);
+            if (user == null) return false;
+
+            if (!string.IsNullOrEmpty(currentPassword) && user.Password != currentPassword)
+            {
+                return false;
+            }
+
+            user.Password = newPassword;
+            await _context.SaveChangesAsync();
+            return true;
+        }
     }
 }

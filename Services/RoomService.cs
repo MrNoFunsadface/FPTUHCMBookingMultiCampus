@@ -9,10 +9,12 @@ namespace Services
         public Task<PaginationResult<Room>> GetRooms(int currentPage, int pageSize);
         public Task<Room?> GetRoomByCodeAndCampusId(string code, int campusId);
         public Task<Room?> GetRoomById(int roomId);
+        public Task<List<Room>> GetRoomsByCampus(int campusId);
         public Task<Room?> CreateRoom(Room room);
         public Task<Room?> UpdateRoom(Room room);
         public Task<Room?> EnableRoom(int roomId);
         public Task<Room?> DisableRoom(int roomId);
+        public Task<bool> DeleteRoom(int roomId);
     }
 
     public class RoomService : IRoomService
@@ -33,6 +35,9 @@ namespace Services
         public async Task<Room?> GetRoomById(int roomId)
             => await _repository.GetRoomById(roomId);
 
+        public async Task<List<Room>> GetRoomsByCampus(int campusId)
+            => await _repository.GetRoomsByCampus(campusId);
+
         public async Task<Room?> CreateRoom(Room room)
             => await _repository.CreateRoom(room);
 
@@ -44,5 +49,8 @@ namespace Services
 
         public async Task<Room?> DisableRoom(int roomId)
             => await _repository.DisableRoom(roomId);
+
+        public async Task<bool> DeleteRoom(int roomId)
+            => await _repository.DeleteRoom(roomId);
     }
 }

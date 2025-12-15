@@ -8,6 +8,7 @@ public interface ICampusService
     public Task<Campus?> GetCampusById(int campusId);
     public Task<Campus> CreateCampus(Campus campus);
     public Task<Campus> UpdateCampus(Campus campus);
+    public Task<bool> DeleteCampus(int campusId);
 }
 
 public class CampusService : ICampusService
@@ -26,4 +27,6 @@ public class CampusService : ICampusService
         => await _repository.CreateCampus(campus);
     public async Task<Campus> UpdateCampus(Campus campus)
         => await _repository.UpdateCampus(campus);
+    public async Task<bool> DeleteCampus(int campusId)
+        => await _repository.DeleteCampus(campusId);
 }

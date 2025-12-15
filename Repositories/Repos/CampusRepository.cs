@@ -23,4 +23,14 @@ public class CampusRepository : ICampusRepository
         await _context.SaveChangesAsync();
         return campus;
     }
+
+    public async Task<bool> DeleteCampus(int campusId)
+    {
+        var campus = await _context.Campuses.FirstOrDefaultAsync(c => c.CampusId == campusId);
+        if (campus == null) return false;
+
+        _context.Campuses.Remove(campus);
+        await _context.SaveChangesAsync();
+        return true;
+    }
 }

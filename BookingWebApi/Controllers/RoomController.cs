@@ -43,6 +43,14 @@ namespace BookingWebApi.Controllers
             return Ok(room);
         }
 
+        // GET api/room/by-campus/{campusId}
+        [HttpGet("by-campus/{campusId}")]
+        public async Task<IActionResult> GetRoomsByCampus(int campusId)
+        {
+            var rooms = await _service.GetRoomsByCampus(campusId);
+            return Ok(rooms);
+        }
+
         [HttpPost]
         public async Task<IActionResult> CreateRoom([FromBody] Room room)
         {
@@ -88,6 +96,15 @@ namespace BookingWebApi.Controllers
             if (room == null) return NotFound("Room not found.");
 
             return Ok(room);
+        }
+
+        // DELETE api/room/{id}
+        [HttpDelete("{id}")]
+        public async Task<IActionResult> DeleteRoom(int id)
+        {
+            var ok = await _service.DeleteRoom(id);
+            if (!ok) return NotFound("Room not found.");
+            return NoContent();
         }
     }
 }

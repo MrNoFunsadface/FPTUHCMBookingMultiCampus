@@ -52,6 +52,16 @@ namespace Repositories.Repos
                 .FirstOrDefaultAsync(r => r.RoomId == roomId);
         }
 
+        // GetRooms by Campus
+        public async Task<List<Room>> GetRoomsByCampus(int campusId)
+        {
+            return await _context.Rooms
+                .Include(r => r.Campus)
+                .Where(r => r.CampusId == campusId)
+                .OrderBy(r => r.Code)
+                .ToListAsync();
+        }
+
         // EnableRoom: đặt IsAvailable = true
         public async Task<Room?> EnableRoom(int roomId)
         {
@@ -114,6 +124,17 @@ namespace Repositories.Repos
             _context.Set<Room>().Update(room);
             await _context.SaveChangesAsync();
             return room;
+        }
+
+        // Delete Room
+        public async Task<bool> DeleteRoom(int roomId)
+        {
+            var room = await _context.Rooms.FindAsync(roomId);
+            if (room == null) return false;
+
+            _context.Rooms.Remove(room);
+            await _context.SaveChangesAsync();
+            return true;
         }
     }
 }
