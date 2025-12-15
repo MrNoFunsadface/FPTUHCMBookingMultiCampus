@@ -6,4 +6,5 @@ public interface ICampusRepository
     public Task<Campus?> GetCampusById(int campusId);
     public Task<Campus> CreateCampus(Campus campus);
     public Task<Campus> UpdateCampus(Campus campus);
+    public Task<bool> DeleteCampus(int campusId);
 }

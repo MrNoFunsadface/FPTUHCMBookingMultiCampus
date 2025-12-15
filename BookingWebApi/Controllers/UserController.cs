@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.IdentityModel.Tokens;
 using Repositories.Models;
 using Services;
@@ -61,6 +62,122 @@ namespace BookingWebApi.Controllers
             return Ok(users);
         }
 
+        // ADMIN: Get user by id
+        [Authorize(Roles = "2")]
+        [HttpGet("{id:int}")]
+        public async Task<IActionResult> GetById(int id)
+        {
+            var user = await _service.GetById(id);
+            if (user == null) return NotFound();
+            return Ok(user);
+        }
+
+        // ADMIN: Update user basic info (name, email, role, active)
+        [Authorize(Roles = "2")]
+        [HttpPut("{id:int}")]
+        public async Task<IActionResult> UpdateUser(int id, [FromBody] UpdateUserRequest request)
+        {
+            if (!ModelState.IsValid) return BadRequest(ModelState);
+
+            var existing = await _service.GetById(id);
+            if (existing == null) return NotFound();
+
+            existing.FullName = request.FullName;
+            existing.Email = request.Email;
+            existing.Role = request.Role;
+            existing.IsActive = request.IsActive;
+
+            var updated = await _service.Update(existing);
+            return Ok(updated);
+        }
+
+        // ADMIN: Delete user
+        [Authorize(Roles = "2")]
+        [HttpDelete("{id:int}")]
+        public async Task<IActionResult> DeleteUser(int id)
+        {
+            var ok = await _service.Delete(id);
+            if (!ok) return NotFound();
+            return NoContent();
+        }
+
+        // ADMIN: Activate user
+        [Authorize(Roles = "2")]
+        [HttpPut("{id:int}/activate")]
+        public async Task<IActionResult> ActivateUser(int id)
+        {
+            var user = await _service.Activate(id);
+            if (user == null) return NotFound();
+            return Ok(user);
+        }
+
+        // ADMIN: Deactivate user
+        [Authorize(Roles = "2")]
+        [HttpPut("{id:int}/deactivate")]
+        public async Task<IActionResult> DeactivateUser(int id)
+        {
+            var user = await _service.Deactivate(id);
+            if (user == null) return NotFound();
+            return Ok(user);
+        }
+
+        // PROFILE: Get current user's profile
+        [Authorize]
+        [HttpGet("me")]
+        public async Task<IActionResult> GetProfile()
+        {
+            var email = User.FindFirstValue(ClaimTypes.Email);
+            if (string.IsNullOrEmpty(email)) return Unauthorized();
+
+            // Reuse LoginUser logic but without password filter: simple approach is via GetUsers and filter, but better repository method;
+            // for now, use GetUsers with large page and filter in memory.
+            var usersPage = await _service.GetUsers(1, 1000);
+            var user = usersPage.Items.FirstOrDefault(u => u.Email == email);
+            if (user == null) return NotFound();
+
+            return Ok(user);
+        }
+
+        // PROFILE: Update current user's profile
+        [Authorize]
+        [HttpPut("me")]
+        public async Task<IActionResult> UpdateProfile([FromBody] UpdateProfileRequest request)
+        {
+            if (!ModelState.IsValid) return BadRequest(ModelState);
+
+            var email = User.FindFirstValue(ClaimTypes.Email);
+            if (string.IsNullOrEmpty(email)) return Unauthorized();
+
+            var usersPage = await _service.GetUsers(1, 1000);
+            var user = usersPage.Items.FirstOrDefault(u => u.Email == email);
+            if (user == null) return NotFound();
+
+            user.FullName = request.FullName;
+
+            var updated = await _service.Update(user);
+            return Ok(updated);
+        }
+
+        // PROFILE: Change password for current user
+        [Authorize]
+        [HttpPut("me/change-password")]
+        public async Task<IActionResult> ChangePassword([FromBody] ChangePasswordRequest request)
+        {
+            if (!ModelState.IsValid) return BadRequest(ModelState);
+
+            var email = User.FindFirstValue(ClaimTypes.Email);
+            if (string.IsNullOrEmpty(email)) return Unauthorized();
+
+            var usersPage = await _service.GetUsers(1, 1000);
+            var user = usersPage.Items.FirstOrDefault(u => u.Email == email);
+            if (user == null) return NotFound();
+
+            var ok = await _service.ChangePassword(user.UserId, request.CurrentPassword, request.NewPassword);
+            if (!ok) return BadRequest("Current password is incorrect or new password invalid.");
+
+            return NoContent();
+        }
+
         private string GenerateJSONWebToken(User user)
         {
             var securityKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_config["Jwt:Key"]));
@@ -81,5 +198,8 @@ namespace BookingWebApi.Controllers
 
         public sealed record LoginRequest(string Email, string Password);
         public sealed record SignUpRequest(string FullName, string Email, string Password);
+        public sealed record UpdateUserRequest(string FullName, string Email, int Role, bool IsActive);
+        public sealed record UpdateProfileRequest(string FullName);
+        public sealed record ChangePasswordRequest(string CurrentPassword, string NewPassword);
     }
 }
