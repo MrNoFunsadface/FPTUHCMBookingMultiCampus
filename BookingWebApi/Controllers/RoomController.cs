@@ -43,7 +43,7 @@ namespace BookingWebApi.Controllers
             return Ok(room);
         }
 
-        // GET api/room/by-campus/{campusId}
+        
         [HttpGet("by-campus/{campusId}")]
         public async Task<IActionResult> GetRoomsByCampus(int campusId)
         {

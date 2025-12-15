@@ -62,7 +62,7 @@ namespace BookingWebApi.Controllers
             return Ok(users);
         }
 
-        // ADMIN: Get user by id
+        // admin: get user by id
         [Authorize(Roles = "2")]
         [HttpGet("{id:int}")]
         public async Task<IActionResult> GetById(int id)
@@ -72,7 +72,7 @@ namespace BookingWebApi.Controllers
             return Ok(user);
         }
 
-        // ADMIN: Update user basic info (name, email, role, active)
+        // admin: update user info (name, email, role, active)
         [Authorize(Roles = "2")]
         [HttpPut("{id:int}")]
         public async Task<IActionResult> UpdateUser(int id, [FromBody] UpdateUserRequest request)
@@ -91,7 +91,7 @@ namespace BookingWebApi.Controllers
             return Ok(updated);
         }
 
-        // ADMIN: Delete user
+        // admin: delete user
         [Authorize(Roles = "2")]
         [HttpDelete("{id:int}")]
         public async Task<IActionResult> DeleteUser(int id)
@@ -101,7 +101,7 @@ namespace BookingWebApi.Controllers
             return NoContent();
         }
 
-        // ADMIN: Activate user
+        // admin: activate user
         [Authorize(Roles = "2")]
         [HttpPut("{id:int}/activate")]
         public async Task<IActionResult> ActivateUser(int id)
@@ -111,7 +111,7 @@ namespace BookingWebApi.Controllers
             return Ok(user);
         }
 
-        // ADMIN: Deactivate user
+        // admin: deactivate user
         [Authorize(Roles = "2")]
         [HttpPut("{id:int}/deactivate")]
         public async Task<IActionResult> DeactivateUser(int id)
@@ -121,7 +121,7 @@ namespace BookingWebApi.Controllers
             return Ok(user);
         }
 
-        // PROFILE: Get current user's profile
+        // profile: get current user's profile
         [Authorize]
         [HttpGet("me")]
         public async Task<IActionResult> GetProfile()
@@ -129,8 +129,6 @@ namespace BookingWebApi.Controllers
             var email = User.FindFirstValue(ClaimTypes.Email);
             if (string.IsNullOrEmpty(email)) return Unauthorized();
 
-            // Reuse LoginUser logic but without password filter: simple approach is via GetUsers and filter, but better repository method;
-            // for now, use GetUsers with large page and filter in memory.
             var usersPage = await _service.GetUsers(1, 1000);
             var user = usersPage.Items.FirstOrDefault(u => u.Email == email);
             if (user == null) return NotFound();
@@ -138,7 +136,7 @@ namespace BookingWebApi.Controllers
             return Ok(user);
         }
 
-        // PROFILE: Update current user's profile
+        // update current user's profile
         [Authorize]
         [HttpPut("me")]
         public async Task<IActionResult> UpdateProfile([FromBody] UpdateProfileRequest request)
@@ -158,7 +156,7 @@ namespace BookingWebApi.Controllers
             return Ok(updated);
         }
 
-        // PROFILE: Change password for current user
+        // change password
         [Authorize]
         [HttpPut("me/change-password")]
         public async Task<IActionResult> ChangePassword([FromBody] ChangePasswordRequest request)

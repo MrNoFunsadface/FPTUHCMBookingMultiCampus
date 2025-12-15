@@ -126,13 +126,13 @@ namespace Repositories.Repos
             return room;
         }
 
-        // Delete Room
+        // soft delete room
         public async Task<bool> DeleteRoom(int roomId)
         {
             var room = await _context.Rooms.FindAsync(roomId);
             if (room == null) return false;
 
-            _context.Rooms.Remove(room);
+            room.IsAvailable = false;
             await _context.SaveChangesAsync();
             return true;
         }
