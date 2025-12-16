@@ -1,2 +1,2 @@
 ﻿namespace BookingWebApi.DTOs;
-public record CreateBookingRequestDto(int RoomId, List<int> SlotIds, DateTime BookingDate);
+public record CreateBookingRequestDto(int RoomId, List<int> SlotIds, DateOnly BookingDate);

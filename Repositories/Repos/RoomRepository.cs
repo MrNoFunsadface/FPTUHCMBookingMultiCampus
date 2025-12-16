@@ -32,16 +32,6 @@ namespace Repositories.Repos
             return await _paginationExtension.PaginateAsync(rooms, currentPage, pageSize);
         }
 
-        // GetRoomByCodeAndCampusId
-        public async Task<Room?> GetRoomByCodeAndCampusId(string code, int campusId)
-        {
-            if (string.IsNullOrWhiteSpace(code)) return null;
-
-            return await _context.Rooms
-                .Include(r => r.Campus)
-                .FirstOrDefaultAsync(r => r.Code == code && r.CampusId == campusId);
-        }
-
         // GetRoomById
         public async Task<Room?> GetRoomById(int roomId)
         {
@@ -52,14 +42,25 @@ namespace Repositories.Repos
                 .FirstOrDefaultAsync(r => r.RoomId == roomId);
         }
 
-        // GetRooms by Campus
-        public async Task<List<Room>> GetRoomsByCampus(int campusId)
+        // GetRooms by Campus: có pagination
+        public async Task<PaginationResult<Room>> GetRoomsByCampus(int campusId, int currentPage, int pageSize)
         {
-            return await _context.Rooms
+            IQueryable<Room> rooms = _context.Rooms
                 .Include(r => r.Campus)
                 .Where(r => r.CampusId == campusId)
-                .OrderBy(r => r.Code)
-                .ToListAsync();
+                .OrderBy(r => r.Code);
+
+            return await _paginationExtension.PaginateAsync(rooms, currentPage, pageSize);
+        }
+
+        // GetRoomByCodeAndCampusId
+        public async Task<Room?> GetRoomByCodeAndCampusId(string code, int campusId)
+        {
+            if (string.IsNullOrWhiteSpace(code)) return null;
+
+            return await _context.Rooms
+                .Include(r => r.Campus)
+                .FirstOrDefaultAsync(r => r.Code == code && r.CampusId == campusId);
         }
 
         // EnableRoom: đặt IsAvailable = true

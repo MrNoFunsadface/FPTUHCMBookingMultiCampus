@@ -11,7 +11,6 @@ namespace Services
         public Task<PaginationResult<User>> GetUsers(int currentPage, int pageSize);
         Task<User?> GetById(int id);
         Task<User?> Update(User user);
-        Task<bool> Delete(int id);
         Task<User?> Activate(int id);
         Task<User?> Deactivate(int id);
         Task<bool> ChangePassword(int userId, string currentPassword, string newPassword);
@@ -37,9 +36,6 @@ namespace Services
 
         public Task<User?> Update(User user)
             => _repository.Update(user);
-
-        public Task<bool> Delete(int id)
-            => _repository.Delete(id);
 
         public Task<User?> Activate(int id)
             => _repository.Activate(id);

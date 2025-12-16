@@ -24,17 +24,6 @@ namespace BookingWebApi.Controllers
             return Ok(rooms);
         }
 
-        [HttpGet("by-code")]
-        public async Task<IActionResult> GetRoomByCodeAndCampusId(
-            [FromQuery] string code,
-            [FromQuery] int campusId)
-        {
-            var room = await _service.GetRoomByCodeAndCampusId(code, campusId);
-            if (room == null) return NotFound("Room not found.");
-
-            return Ok(room);
-        }
-
         [HttpGet("{id}")]
         public async Task<IActionResult> GetRoomById(int id)
         {
@@ -43,12 +32,25 @@ namespace BookingWebApi.Controllers
             return Ok(room);
         }
 
-        
-        [HttpGet("by-campus/{campusId}")]
-        public async Task<IActionResult> GetRoomsByCampus(int campusId)
+        [HttpGet("by-campus")]
+        public async Task<IActionResult> GetRoomsByCampus(
+            [FromQuery] int campusId,
+            [FromQuery] int currentPage = 1,
+            [FromQuery] int pageSize = 10)
         {
-            var rooms = await _service.GetRoomsByCampus(campusId);
+            var rooms = await _service.GetRoomsByCampus(campusId, currentPage, pageSize);
             return Ok(rooms);
+        }
+
+        [HttpGet("by-code-and-campus")]
+        public async Task<IActionResult> GetRoomByCodeAndCampusId(
+            [FromQuery] string code,
+            [FromQuery] int campusId)
+        {
+            var room = await _service.GetRoomByCodeAndCampusId(code, campusId);
+            if (room == null) return NotFound("Room not found.");
+
+            return Ok(room);
         }
 
         [HttpPost]

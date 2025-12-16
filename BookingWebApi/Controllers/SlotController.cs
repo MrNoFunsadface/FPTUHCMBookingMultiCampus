@@ -3,7 +3,7 @@ using Services;
 
 namespace BookingWebApi.Controllers;
 [ApiController]
-[Route("api/slots")]
+[Route("api/[controller]")]
 public class SlotController : ControllerBase
 {
     private readonly ISlotService _service;

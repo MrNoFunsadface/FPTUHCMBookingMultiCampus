@@ -30,8 +30,10 @@ namespace BookingWebApi.Controllers
             var user = await _service.LoginUser(request.Email, request.Password);
             if (user == null) return Unauthorized("Invalid email or password.");
 
+            if (!user.IsActive) return Unauthorized("User is deactivated.");
+
             var token = GenerateJSONWebToken(user);
-            return Ok(new {token, user.Role});
+            return Ok(new { token, user.Role });
         }
 
         [HttpPost("register")]
@@ -44,7 +46,7 @@ namespace BookingWebApi.Controllers
                 FullName = request.FullName,
                 Email = request.Email,
                 Password = request.Password,
-                Role = 1,
+                Role = request.isLecturer ? 2 : 1,
                 IsActive = true
             };
 
@@ -52,7 +54,7 @@ namespace BookingWebApi.Controllers
             if (newUser == null) return BadRequest("User registration failed! User already existed.");
 
             var token = GenerateJSONWebToken(newUser);
-            return Ok(new {token, user.Role});
+            return Ok(new { token, user.Role });
         }
 
         [HttpPost("getUsers")]
@@ -62,8 +64,8 @@ namespace BookingWebApi.Controllers
             return Ok(users);
         }
 
-        // admin: get user by id
-        [Authorize(Roles = "2")]
+        // Admin: get user by id
+        [Authorize(Roles = "0")]
         [HttpGet("{id:int}")]
         public async Task<IActionResult> GetById(int id)
         {
@@ -72,8 +74,8 @@ namespace BookingWebApi.Controllers
             return Ok(user);
         }
 
-        // admin: update user info (name, email, role, active)
-        [Authorize(Roles = "2")]
+        // Admin: update user info (name, email, role, active)
+        [Authorize(Roles = "0")]
         [HttpPut("{id:int}")]
         public async Task<IActionResult> UpdateUser(int id, [FromBody] UpdateUserRequest request)
         {
@@ -91,18 +93,8 @@ namespace BookingWebApi.Controllers
             return Ok(updated);
         }
 
-        // admin: delete user
-        [Authorize(Roles = "2")]
-        [HttpDelete("{id:int}")]
-        public async Task<IActionResult> DeleteUser(int id)
-        {
-            var ok = await _service.Delete(id);
-            if (!ok) return NotFound();
-            return NoContent();
-        }
-
-        // admin: activate user
-        [Authorize(Roles = "2")]
+        // Admin: activate user
+        [Authorize(Roles = "0")]
         [HttpPut("{id:int}/activate")]
         public async Task<IActionResult> ActivateUser(int id)
         {
@@ -111,8 +103,8 @@ namespace BookingWebApi.Controllers
             return Ok(user);
         }
 
-        // admin: deactivate user
-        [Authorize(Roles = "2")]
+        // Admin: deactivate user
+        [Authorize(Roles = "0")]
         [HttpPut("{id:int}/deactivate")]
         public async Task<IActionResult> DeactivateUser(int id)
         {
@@ -121,7 +113,7 @@ namespace BookingWebApi.Controllers
             return Ok(user);
         }
 
-        // profile: get current user's profile
+        // Profile: get current user's profile
         [Authorize]
         [HttpGet("me")]
         public async Task<IActionResult> GetProfile()
@@ -132,6 +124,9 @@ namespace BookingWebApi.Controllers
             var usersPage = await _service.GetUsers(1, 1000);
             var user = usersPage.Items.FirstOrDefault(u => u.Email == email);
             if (user == null) return NotFound();
+
+            var actualPassword = user.Password ?? string.Empty;
+            user.Password = new string('*', actualPassword.Length);
 
             return Ok(user);
         }
@@ -153,6 +148,8 @@ namespace BookingWebApi.Controllers
             user.FullName = request.FullName;
 
             var updated = await _service.Update(user);
+            if (updated != null) updated.Password = new string('*', (updated.Password ?? string.Empty).Length);
+
             return Ok(updated);
         }
 
@@ -185,8 +182,8 @@ namespace BookingWebApi.Controllers
                 , _config["Jwt:Audience"]
                 , [
                     new(ClaimTypes.Name, user.FullName),
-                    new(ClaimTypes.Email, user.Email),
-                    new(ClaimTypes.Role, user.Role.ToString()),
+                            new(ClaimTypes.Email, user.Email),
+                            new(ClaimTypes.Role, user.Role.ToString()),
                 ]
                 , expires: DateTime.Now.AddDays(30)
                 , signingCredentials: credentials
@@ -195,7 +192,7 @@ namespace BookingWebApi.Controllers
         }
 
         public sealed record LoginRequest(string Email, string Password);
-        public sealed record SignUpRequest(string FullName, string Email, string Password);
+        public sealed record SignUpRequest(string FullName, string Email, string Password, bool isLecturer);
         public sealed record UpdateUserRequest(string FullName, string Email, int Role, bool IsActive);
         public sealed record UpdateProfileRequest(string FullName);
         public sealed record ChangePasswordRequest(string CurrentPassword, string NewPassword);

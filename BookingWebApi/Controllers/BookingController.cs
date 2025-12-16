@@ -7,11 +7,14 @@ using Repositories.Models;
 
 namespace BookingWebApi.Controllers;
 [ApiController]
-[Route("api/bookings")]
+[Route("api/[controller]")]
 public class BookingController : ControllerBase
 {
     private readonly IBookingService _service;
-    public BookingController(IBookingService service) { _service = service; }
+    public BookingController(IBookingService service)
+    {
+        _service = service;
+    }
 
     [Authorize]
     [HttpPost]
@@ -24,7 +27,7 @@ public class BookingController : ControllerBase
         // Map DTO -> Booking entity
         var booking = new Booking
         {
-            BookingDate = DateOnly.FromDateTime(dto.BookingDate),
+            BookingDate = dto.BookingDate,
             Roomslots = dto.SlotIds.Select(sid => new Roomslot { RoomId = dto.RoomId, SlotId = sid }).ToList()
         };
 
@@ -41,15 +44,15 @@ public class BookingController : ControllerBase
         return Ok(await _service.GetHistory(userId));
     }
 
-    [Authorize(Roles = "2")]
+    [Authorize(Roles = "0")]
     [HttpGet("pending")]
     public async Task<IActionResult> GetPending() => Ok(await _service.GetPending());
 
-    [Authorize(Roles = "2")]
+    [Authorize(Roles = "0")]
     [HttpPost("{id}/approve")]
     public async Task<IActionResult> Approve(int id) { await _service.Approve(id); return Ok(); }
 
-    [Authorize(Roles = "2")]
+    [Authorize(Roles = "0")]
     [HttpPost("{id}/reject")]
     public async Task<IActionResult> Reject(int id) { await _service.Reject(id); return Ok(); }
 

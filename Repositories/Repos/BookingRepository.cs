@@ -23,17 +23,30 @@ public class BookingRepository : IBookingRepository
 
         if (!requestedPairs.Any()) return null; // nothing to book
 
-        // Ensure there is no existing booking on the same date that uses any of the same room+slot pairs
-        var conflict = await _context.Bookings
+        // Load existing bookings on the same date into memory (exclude canceled/rejected)
+        // Doing this in memory allows us to use local collections to check overlaps without
+        // forcing EF Core to translate complex client-side Any(...) into SQL.
+        var existingBookings = await _context.Bookings
             .Where(b => b.BookingDate == booking.BookingDate && b.Status != "Canceled" && b.Status != "Rejected")
-            .AnyAsync(b => b.Roomslots.Any(rs => requestedPairs.Any(rp => rp.RoomId == rs.RoomId && rp.SlotId == rs.SlotId)));
+            .Include(b => b.Roomslots)
+            .ToListAsync();
+
+        // Check for conflicts in-memory
+        var conflict = existingBookings.Any(b => b.Roomslots.Any(rs => requestedPairs.Any(rp => rp.RoomId == rs.RoomId && rp.SlotId == rs.SlotId)));
 
         if (conflict) return null;
 
         // Load the actual Roomslot entities from DB to ensure they exist and to attach them to the booking
-        var roomSlots = await _context.Roomslots
-            .Where(rs => requestedPairs.Any(rp => rp.RoomId == rs.RoomId && rp.SlotId == rs.SlotId))
-            .ToListAsync();
+        var roomSlots = new List<Roomslot>();
+        foreach (var rp in requestedPairs)
+        {
+            // Use FindAsync with composite key (RoomId, SlotId)
+            var rs = await _context.Roomslots.FindAsync(rp.RoomId, rp.SlotId);
+            if (rs != null)
+            {
+                roomSlots.Add(rs);
+            }
+        }
 
         // If any requested pair does not exist in DB, reject the request
         if (roomSlots.Count != requestedPairs.Count)

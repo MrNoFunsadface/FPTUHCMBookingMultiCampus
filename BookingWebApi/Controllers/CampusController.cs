@@ -5,7 +5,7 @@ using Repositories.Models;
 
 namespace BookingWebApi.Controllers;
 [ApiController]
-[Route("api/campus")]
+[Route("api/[controller]")]
 public class CampusController : ControllerBase
 {
     private readonly ICampusService _service;

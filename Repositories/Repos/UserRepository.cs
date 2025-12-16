@@ -78,16 +78,6 @@ namespace Repositories.Repos
             return existing;
         }
 
-        public async Task<bool> Delete(int id)
-        {
-            var user = await _context.Set<User>().FirstOrDefaultAsync(u => u.UserId == id);
-            if (user == null) return false;
-
-            _context.Set<User>().Remove(user);
-            await _context.SaveChangesAsync();
-            return true;
-        }
-
         public async Task<User?> Activate(int id)
         {
             var user = await _context.Set<User>().FirstOrDefaultAsync(u => u.UserId == id);
