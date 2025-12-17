@@ -8,10 +8,11 @@ namespace Repositories.Interfaces
         public Task<User?> LoginUser(string email, string password);
         public Task<User?> SignUpUser(User newUser);
         public Task<PaginationResult<User>> GetUsers(int currentPage, int pageSize);
-        Task<User?> GetById(int id);
-        Task<User?> Update(User user);
-        Task<User?> Activate(int id);
-        Task<User?> Deactivate(int id);
-        Task<bool> ChangePassword(int userId, string currentPassword, string newPassword);
+        public Task<User?> GetById(int id);
+        public Task<User?> GetByEmail(string email);
+        public Task<User?> Update(User user);
+        public Task<User?> Activate(int id);
+        public Task<User?> Deactivate(int id);
+        public Task<bool> ChangePassword(int userId, string currentPassword, string newPassword);
     }
 }

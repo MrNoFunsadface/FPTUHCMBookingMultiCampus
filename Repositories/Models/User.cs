@@ -15,7 +15,7 @@ public partial class User
 
     public string Password { get; set; }
 
-    public int Role { get; set; }
+    public int Role { get; set; } // 0: Admin, 1: Student, 2: Lecturer, 3: Manager
 
     public bool IsActive { get; set; }
 

@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using Repositories.Models;
 using Services;
 
@@ -53,6 +54,7 @@ namespace BookingWebApi.Controllers
             return Ok(room);
         }
 
+        [Authorize(Roles = "0, 3")]
         [HttpPost]
         public async Task<IActionResult> CreateRoom([FromBody] Room room)
         {
@@ -65,6 +67,7 @@ namespace BookingWebApi.Controllers
             return Ok(createdRoom);
         }
 
+        [Authorize(Roles = "0, 3")]
         [HttpPut("{id}")]
         public async Task<IActionResult> UpdateRoom(int id, [FromBody] Room room)
         {
@@ -80,6 +83,7 @@ namespace BookingWebApi.Controllers
             return Ok(updatedRoom);
         }
 
+        [Authorize(Roles = "0, 3")]
         // PUT api/rooms/{id}/enable
         [HttpPut("{id}/enable")]
         public async Task<IActionResult> EnableRoom(int id)
@@ -90,6 +94,7 @@ namespace BookingWebApi.Controllers
             return Ok(room);
         }
 
+        [Authorize(Roles = "0, 3")]
         // PUT api/rooms/{id}/disable
         [HttpPut("{id}/disable")]
         public async Task<IActionResult> DisableRoom(int id)
@@ -98,15 +103,6 @@ namespace BookingWebApi.Controllers
             if (room == null) return NotFound("Room not found.");
 
             return Ok(room);
-        }
-
-        // DELETE api/room/{id}
-        [HttpDelete("{id}")]
-        public async Task<IActionResult> DeleteRoom(int id)
-        {
-            var ok = await _service.DeleteRoom(id);
-            if (!ok) return NotFound("Room not found.");
-            return NoContent();
         }
     }
 }

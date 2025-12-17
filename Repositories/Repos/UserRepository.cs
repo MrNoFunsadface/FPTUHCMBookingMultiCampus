@@ -56,11 +56,14 @@ namespace Repositories.Repos
         public async Task<PaginationResult<User>> GetUsers(int currentPage, int pageSize)
         {
             IQueryable<User> user = _context.Set<User>();
-            return await _paginationExtension.PaginateAsync(user, currentPage, pageSize);
+            return await PaginationExtension.PaginateAsync(user, currentPage, pageSize);
         }
 
-        public Task<User?> GetById(int id)
-            => _context.Set<User>().FirstOrDefaultAsync(u => u.UserId == id);
+        public async Task<User?> GetById(int id)
+            => await _context.Set<User>().FirstOrDefaultAsync(u => u.UserId == id);
+
+        public async Task<User?> GetByEmail(string email)
+            => await _context.Set<User>().FirstOrDefaultAsync(u => u.Email == email);
 
         public async Task<User?> Update(User user)
         {

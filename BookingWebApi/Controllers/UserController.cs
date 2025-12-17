@@ -65,7 +65,7 @@ namespace BookingWebApi.Controllers
         }
 
         // Admin: get user by id
-        [Authorize(Roles = "0")]
+        [Authorize(Roles = "0, 3")]
         [HttpGet("{id:int}")]
         public async Task<IActionResult> GetById(int id)
         {
@@ -75,7 +75,7 @@ namespace BookingWebApi.Controllers
         }
 
         // Admin: update user info (name, email, role, active)
-        [Authorize(Roles = "0")]
+        [Authorize(Roles = "0, 3")]
         [HttpPut("{id:int}")]
         public async Task<IActionResult> UpdateUser(int id, [FromBody] UpdateUserRequest request)
         {
@@ -94,7 +94,7 @@ namespace BookingWebApi.Controllers
         }
 
         // Admin: activate user
-        [Authorize(Roles = "0")]
+        [Authorize(Roles = "0, 3")]
         [HttpPut("{id:int}/activate")]
         public async Task<IActionResult> ActivateUser(int id)
         {
@@ -104,7 +104,7 @@ namespace BookingWebApi.Controllers
         }
 
         // Admin: deactivate user
-        [Authorize(Roles = "0")]
+        [Authorize(Roles = "0, 3")]
         [HttpPut("{id:int}/deactivate")]
         public async Task<IActionResult> DeactivateUser(int id)
         {
@@ -121,8 +121,7 @@ namespace BookingWebApi.Controllers
             var email = User.FindFirstValue(ClaimTypes.Email);
             if (string.IsNullOrEmpty(email)) return Unauthorized();
 
-            var usersPage = await _service.GetUsers(1, 1000);
-            var user = usersPage.Items.FirstOrDefault(u => u.Email == email);
+            var user = await _service.GetByEmail(email);
             if (user == null) return NotFound();
 
             var actualPassword = user.Password ?? string.Empty;
@@ -141,8 +140,7 @@ namespace BookingWebApi.Controllers
             var email = User.FindFirstValue(ClaimTypes.Email);
             if (string.IsNullOrEmpty(email)) return Unauthorized();
 
-            var usersPage = await _service.GetUsers(1, 1000);
-            var user = usersPage.Items.FirstOrDefault(u => u.Email == email);
+            var user = await _service.GetByEmail(email);
             if (user == null) return NotFound();
 
             user.FullName = request.FullName;
@@ -163,8 +161,7 @@ namespace BookingWebApi.Controllers
             var email = User.FindFirstValue(ClaimTypes.Email);
             if (string.IsNullOrEmpty(email)) return Unauthorized();
 
-            var usersPage = await _service.GetUsers(1, 1000);
-            var user = usersPage.Items.FirstOrDefault(u => u.Email == email);
+            var user = await _service.GetByEmail(email);
             if (user == null) return NotFound();
 
             var ok = await _service.ChangePassword(user.UserId, request.CurrentPassword, request.NewPassword);
@@ -182,8 +179,8 @@ namespace BookingWebApi.Controllers
                 , _config["Jwt:Audience"]
                 , [
                     new(ClaimTypes.Name, user.FullName),
-                            new(ClaimTypes.Email, user.Email),
-                            new(ClaimTypes.Role, user.Role.ToString()),
+                    new(ClaimTypes.Email, user.Email),
+                    new(ClaimTypes.Role, user.Role.ToString()),
                 ]
                 , expires: DateTime.Now.AddDays(30)
                 , signingCredentials: credentials

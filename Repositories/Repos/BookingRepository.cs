@@ -10,7 +10,7 @@ public class BookingRepository : IBookingRepository
     public BookingRepository() { _context = new Context(); }
     public BookingRepository(Context context) { _context = context; }
 
-    // Booking: no book same slot booked before in 1 room, no book different date, allow different room
+    // Booking: no book same slot booked before in 1 room, no book different date, allow different room, multiple slots of the same room
     public async Task<Booking?> Create(Booking booking)
     {
         if (booking == null) return null;
@@ -24,8 +24,6 @@ public class BookingRepository : IBookingRepository
         if (!requestedPairs.Any()) return null; // nothing to book
 
         // Load existing bookings on the same date into memory (exclude canceled/rejected)
-        // Doing this in memory allows us to use local collections to check overlaps without
-        // forcing EF Core to translate complex client-side Any(...) into SQL.
         var existingBookings = await _context.Bookings
             .Where(b => b.BookingDate == booking.BookingDate && b.Status != "Canceled" && b.Status != "Rejected")
             .Include(b => b.Roomslots)
@@ -33,20 +31,21 @@ public class BookingRepository : IBookingRepository
 
         // Check for conflicts in-memory
         var conflict = existingBookings.Any(b => b.Roomslots.Any(rs => requestedPairs.Any(rp => rp.RoomId == rs.RoomId && rp.SlotId == rs.SlotId)));
-
         if (conflict) return null;
 
-        // Load the actual Roomslot entities from DB to ensure they exist and to attach them to the booking
-        var roomSlots = new List<Roomslot>();
-        foreach (var rp in requestedPairs)
-        {
-            // Use FindAsync with composite key (RoomId, SlotId)
-            var rs = await _context.Roomslots.FindAsync(rp.RoomId, rp.SlotId);
-            if (rs != null)
-            {
-                roomSlots.Add(rs);
-            }
-        }
+        // --- FIXED PART: load candidate Roomslot rows with a simple SQL-friendly predicate ---
+        var roomIds = requestedPairs.Select(p => p.RoomId).Distinct().ToList();
+
+        // load all Roomslot rows that have the requested RoomIds (this is translatable to SQL)
+        var candidateRoomSlots = await _context.Roomslots
+            .Where(rs => roomIds.Contains(rs.RoomId))
+            .ToListAsync();
+
+        // filter in-memory to exact (RoomId, SlotId) pairs
+        var requestedSet = new HashSet<(int, int)>(requestedPairs);
+        var roomSlots = candidateRoomSlots
+            .Where(rs => requestedSet.Contains((rs.RoomId, rs.SlotId)))
+            .ToList();
 
         // If any requested pair does not exist in DB, reject the request
         if (roomSlots.Count != requestedPairs.Count)

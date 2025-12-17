@@ -6,7 +6,7 @@ namespace Repositories.ModelExtensions
     {
         public PaginationExtension() { }
 
-        public async Task<PaginationResult<T>> PaginateAsync<T>(IQueryable<T> query, int currentPage, int pageSize) where T : class
+        public static async Task<PaginationResult<T>> PaginateAsync<T>(IQueryable<T> query, int currentPage, int pageSize) where T : class
         {
             if (query == null) throw new ArgumentNullException(nameof(query));
             if (pageSize <= 0) throw new ArgumentOutOfRangeException(nameof(pageSize));

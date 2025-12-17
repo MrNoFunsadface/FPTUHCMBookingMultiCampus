@@ -2,6 +2,7 @@
 #nullable disable
 using System;
 using System.Collections.Generic;
+using System.Text.Json.Serialization;
 
 namespace Repositories.Models;
 
@@ -21,6 +22,7 @@ public partial class Booking
 
     public DateTime? CancelAt { get; set; }
 
+    [JsonIgnore]
     public virtual User RequestedByUser { get; set; }
 
     public virtual ICollection<Roomslot> Roomslots { get; set; } = new List<Roomslot>();

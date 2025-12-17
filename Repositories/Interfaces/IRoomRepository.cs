@@ -11,5 +11,4 @@ public interface IRoomRepository
     public Task<Room?> DisableRoom(int roomId);
     public Task<Room?> CreateRoom(Room room);
     public Task<Room?> UpdateRoom(Room room);
-    public Task<bool> DeleteRoom(int roomId);
 }

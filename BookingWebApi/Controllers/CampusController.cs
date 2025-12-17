@@ -1,7 +1,7 @@
-﻿using BookingWebApi.DTOs;
+﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Services;
 using Repositories.Models;
+using Services;
 
 namespace BookingWebApi.Controllers;
 [ApiController]
@@ -25,6 +25,7 @@ public class CampusController : ControllerBase
         return Ok(campus);
     }
 
+    [Authorize(Roles = "0, 3")]
     [HttpPost]
     public async Task<IActionResult> CreateCampus([FromBody] Campus campus)
     {
@@ -35,6 +36,7 @@ public class CampusController : ControllerBase
         return Ok(createdCampus);
     }
 
+    [Authorize(Roles = "0, 3")]
     [HttpPut("{id}")]
     public async Task<IActionResult> UpdateCampus(int id, [FromBody] Campus campus)
     {

@@ -29,7 +29,7 @@ namespace Repositories.Repos
                 .Include(r => r.Campus)
                 .OrderBy(r => r.Code);
 
-            return await _paginationExtension.PaginateAsync(rooms, currentPage, pageSize);
+            return await PaginationExtension.PaginateAsync(rooms, currentPage, pageSize);
         }
 
         // GetRoomById
@@ -50,7 +50,7 @@ namespace Repositories.Repos
                 .Where(r => r.CampusId == campusId)
                 .OrderBy(r => r.Code);
 
-            return await _paginationExtension.PaginateAsync(rooms, currentPage, pageSize);
+            return await PaginationExtension.PaginateAsync(rooms, currentPage, pageSize);
         }
 
         // GetRoomByCodeAndCampusId
@@ -125,17 +125,6 @@ namespace Repositories.Repos
             _context.Set<Room>().Update(room);
             await _context.SaveChangesAsync();
             return room;
-        }
-
-        // soft delete room
-        public async Task<bool> DeleteRoom(int roomId)
-        {
-            var room = await _context.Rooms.FindAsync(roomId);
-            if (room == null) return false;
-
-            room.IsAvailable = false;
-            await _context.SaveChangesAsync();
-            return true;
         }
     }
 }
