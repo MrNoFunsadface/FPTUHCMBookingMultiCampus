@@ -1,16 +1,17 @@
 ﻿using Repositories.Interfaces;
 using Repositories.Models;
+using Repositories.ModelExtensions;
 
 namespace Services;
 public interface IBookingService
 {
-    Task<Booking?> Create(int userId, Booking booking);
-    Task<List<Booking>> GetHistory(int userId);
-    Task<List<Booking>> GetPending();
-    Task Approve(int id);
-    Task Reject(int id);
-    Task Cancel(int id);
-    Task<Booking?> GetById(int id);
+    public Task<Booking?> Create(int userId, Booking booking);
+    public Task<bool> Cancel(int id);
+    public Task<PaginationResult<Booking>> GetByUser(int userId, int currentPage, int pageSize);
+    public Task<Booking?> GetById(int id);
+    public Task<PaginationResult<Booking>> GetPending(int currentPage, int pageSize);
+    public Task<bool> Approve(int id);
+    public Task<bool> Reject(int id);
 }
 
 public class BookingService : IBookingService
@@ -33,26 +34,10 @@ public class BookingService : IBookingService
         var created = await _repository.Create(booking);
         return created;
     }
-
-    public async Task<List<Booking>> GetHistory(int userId)
-    {
-        var bookings = await _repository.GetByUser(userId);
-        return bookings;
-    }
-
-    public async Task<List<Booking>> GetPending()
-    {
-        var bookings = await _repository.GetAllPending();
-        return bookings;
-    }
-
-    public Task Approve(int id) => _repository.Approve(id);
-    public Task Reject(int id) => _repository.Reject(id);
-    public Task Cancel(int id) => _repository.Cancel(id);
-
-    public async Task<Booking?> GetById(int id)
-    {
-        var b = await _repository.GetById(id);
-        return b;
-    }
+    public async Task<bool> Cancel(int id) => await _repository.Cancel(id);
+    public async Task<PaginationResult<Booking>> GetByUser(int userId, int currentPage, int pageSize) => await _repository.GetByUser(userId, currentPage, pageSize);
+    public async Task<Booking?> GetById(int id) => await _repository.GetById(id);
+    public async Task<PaginationResult<Booking>> GetPending(int currentPage, int pageSize) => await _repository.GetAllPending(currentPage, pageSize);
+    public async Task<bool> Approve(int id) => await _repository.Approve(id);
+    public async Task<bool> Reject(int id) => await _repository.Reject(id);
 }

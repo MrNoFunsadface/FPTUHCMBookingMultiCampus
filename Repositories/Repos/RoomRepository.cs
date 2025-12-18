@@ -22,7 +22,7 @@ namespace Repositories.Repos
             _paginationExtension = paginationExtension;
         }
 
-        // GetRooms: có pagination
+        // GetRooms: pagination
         public async Task<PaginationResult<Room>> GetRooms(int currentPage, int pageSize)
         {
             IQueryable<Room> rooms = _context.Rooms
@@ -42,7 +42,7 @@ namespace Repositories.Repos
                 .FirstOrDefaultAsync(r => r.RoomId == roomId);
         }
 
-        // GetRooms by Campus: có pagination
+        // GetRooms by Campus: pagination
         public async Task<PaginationResult<Room>> GetRoomsByCampus(int campusId, int currentPage, int pageSize)
         {
             IQueryable<Room> rooms = _context.Rooms
@@ -63,7 +63,7 @@ namespace Repositories.Repos
                 .FirstOrDefaultAsync(r => r.Code == code && r.CampusId == campusId);
         }
 
-        // EnableRoom: đặt IsAvailable = true
+        // EnableRoom: IsAvailable = true
         public async Task<Room?> EnableRoom(int roomId)
         {
             var room = await _context.Rooms.FindAsync(roomId);
@@ -74,7 +74,7 @@ namespace Repositories.Repos
             return room;
         }
 
-        // DisableRoom: đặt IsAvailable = false
+        // DisableRoom: IsAvailable = false
         public async Task<Room?> DisableRoom(int roomId)
         {
             var room = await _context.Rooms.FindAsync(roomId);
@@ -85,7 +85,7 @@ namespace Repositories.Repos
             return room;
         }
 
-        // Create Room: không được trùng Code trong cùng Campus
+        // Create Room: no same Code in same Campus
         public async Task<Room?> CreateRoom(Room room)
         {
             if (room == null || string.IsNullOrWhiteSpace(room.Code))

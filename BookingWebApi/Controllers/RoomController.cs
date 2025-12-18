@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Mvc;
 using Repositories.Models;
 using Services;
+using Swashbuckle.AspNetCore.Annotations;
 
 namespace BookingWebApi.Controllers
 {
@@ -16,6 +17,7 @@ namespace BookingWebApi.Controllers
             _service = service;
         }
 
+        [SwaggerOperation(Summary = "User: Get rooms", Description = "User get paginated list of rooms.")]
         [HttpGet]
         public async Task<IActionResult> GetRooms(
             [FromQuery] int currentPage = 1,
@@ -25,6 +27,7 @@ namespace BookingWebApi.Controllers
             return Ok(rooms);
         }
 
+        [SwaggerOperation(Summary = "User: Get room by id", Description = "User get room details by id.")]
         [HttpGet("{id}")]
         public async Task<IActionResult> GetRoomById(int id)
         {
@@ -33,6 +36,7 @@ namespace BookingWebApi.Controllers
             return Ok(room);
         }
 
+        [SwaggerOperation(Summary = "User: Get rooms by campus", Description = "User get paginated rooms filtered by campus.")]
         [HttpGet("by-campus")]
         public async Task<IActionResult> GetRoomsByCampus(
             [FromQuery] int campusId,
@@ -43,6 +47,7 @@ namespace BookingWebApi.Controllers
             return Ok(rooms);
         }
 
+        [SwaggerOperation(Summary = "User: Get room by code and campus", Description = "User get room details by code and campus id.")]
         [HttpGet("by-code-and-campus")]
         public async Task<IActionResult> GetRoomByCodeAndCampusId(
             [FromQuery] string code,
@@ -55,6 +60,7 @@ namespace BookingWebApi.Controllers
         }
 
         [Authorize(Roles = "0, 3")]
+        [SwaggerOperation(Summary = "Manager: Create room", Description = "Manager create a new room.")]
         [HttpPost]
         public async Task<IActionResult> CreateRoom([FromBody] Room room)
         {
@@ -68,13 +74,24 @@ namespace BookingWebApi.Controllers
         }
 
         [Authorize(Roles = "0, 3")]
+        [SwaggerOperation(Summary = "Manager: Update room", Description = "Manager update room information.")]
         [HttpPut("{id}")]
-        public async Task<IActionResult> UpdateRoom(int id, [FromBody] Room room)
+        public async Task<IActionResult> UpdateRoom(int id, [FromBody] UpdateRoomRequest request)
         {
             if (!ModelState.IsValid) return BadRequest(ModelState);
 
             var existed = await _service.GetRoomById(id);
             if (existed == null) return NotFound();
+
+            var room = new Room
+            {
+                RoomId = id,
+                Code = request.Code,
+                CampusId = request.CampusId,
+                RoomType = request.RoomType,
+                Capacity = request.Capacity,
+                IsAvailable = request.IsAvailable
+            };
 
             var updatedRoom = await _service.UpdateRoom(room);
             if (updatedRoom == null)
@@ -84,6 +101,7 @@ namespace BookingWebApi.Controllers
         }
 
         [Authorize(Roles = "0, 3")]
+        [SwaggerOperation(Summary = "Manager: Enable room", Description = "Manager enable a room (set available).")]
         // PUT api/rooms/{id}/enable
         [HttpPut("{id}/enable")]
         public async Task<IActionResult> EnableRoom(int id)
@@ -95,6 +113,7 @@ namespace BookingWebApi.Controllers
         }
 
         [Authorize(Roles = "0, 3")]
+        [SwaggerOperation(Summary = "Manager: Disable room", Description = "Manager disable a room (set unavailable).")]
         // PUT api/rooms/{id}/disable
         [HttpPut("{id}/disable")]
         public async Task<IActionResult> DisableRoom(int id)
@@ -104,5 +123,7 @@ namespace BookingWebApi.Controllers
 
             return Ok(room);
         }
+
+        public sealed record UpdateRoomRequest(string Code, int CampusId, string RoomType, int Capacity, bool IsAvailable);
     }
 }

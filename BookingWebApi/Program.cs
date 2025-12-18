@@ -94,6 +94,8 @@ builder.Services.AddSwaggerGen(c =>
             Array.Empty<string>()
         }
     });
+
+    c.EnableAnnotations();
 });
 
 builder.Services.AddScoped<PaginationExtension, PaginationExtension>();

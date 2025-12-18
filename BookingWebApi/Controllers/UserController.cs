@@ -6,6 +6,7 @@ using Services;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
+using Swashbuckle.AspNetCore.Annotations;
 
 namespace BookingWebApi.Controllers
 {
@@ -22,6 +23,7 @@ namespace BookingWebApi.Controllers
             _service = service;
         }
 
+        [SwaggerOperation(Summary = "User: Login", Description = "User login with email and password.")]
         [HttpPost("login")]
         public async Task<IActionResult> LoginUser([FromBody] LoginRequest request)
         {
@@ -36,6 +38,7 @@ namespace BookingWebApi.Controllers
             return Ok(new { token, user.Role });
         }
 
+        [SwaggerOperation(Summary = "User: Register", Description = "User register a new account.")]
         [HttpPost("register")]
         public async Task<IActionResult> SignUpUser([FromBody] SignUpRequest request)
         {
@@ -57,6 +60,7 @@ namespace BookingWebApi.Controllers
             return Ok(new { token, user.Role });
         }
 
+        [SwaggerOperation(Summary = "Manager: Get users", Description = "Manager get paginated list of users.")]
         [HttpPost("getUsers")]
         public async Task<IActionResult> GetUsers([FromQuery] int currentPage = 1, [FromQuery] int pageSize = 10)
         {
@@ -64,8 +68,9 @@ namespace BookingWebApi.Controllers
             return Ok(users);
         }
 
-        // Admin: get user by id
+        // Manager: get user by id
         [Authorize(Roles = "0, 3")]
+        [SwaggerOperation(Summary = "Manager: Get user by id", Description = "Manager get user details by id.")]
         [HttpGet("{id:int}")]
         public async Task<IActionResult> GetById(int id)
         {
@@ -74,8 +79,9 @@ namespace BookingWebApi.Controllers
             return Ok(user);
         }
 
-        // Admin: update user info (name, email, role, active)
+        // Manager: update user info (name, email, role, active)
         [Authorize(Roles = "0, 3")]
+        [SwaggerOperation(Summary = "Manager: Update user", Description = "Manager update user's information including role and active status.")]
         [HttpPut("{id:int}")]
         public async Task<IActionResult> UpdateUser(int id, [FromBody] UpdateUserRequest request)
         {
@@ -93,8 +99,9 @@ namespace BookingWebApi.Controllers
             return Ok(updated);
         }
 
-        // Admin: activate user
+        // Manager: activate user
         [Authorize(Roles = "0, 3")]
+        [SwaggerOperation(Summary = "Manager: Activate user", Description = "Manager activate a user account.")]
         [HttpPut("{id:int}/activate")]
         public async Task<IActionResult> ActivateUser(int id)
         {
@@ -103,8 +110,9 @@ namespace BookingWebApi.Controllers
             return Ok(user);
         }
 
-        // Admin: deactivate user
+        // Manager: deactivate user
         [Authorize(Roles = "0, 3")]
+        [SwaggerOperation(Summary = "Manager: Deactivate user", Description = "Manager deactivate a user account.")]
         [HttpPut("{id:int}/deactivate")]
         public async Task<IActionResult> DeactivateUser(int id)
         {
@@ -115,6 +123,7 @@ namespace BookingWebApi.Controllers
 
         // Profile: get current user's profile
         [Authorize]
+        [SwaggerOperation(Summary = "User: Get profile", Description = "Get current user's profile.")]
         [HttpGet("me")]
         public async Task<IActionResult> GetProfile()
         {
@@ -132,6 +141,7 @@ namespace BookingWebApi.Controllers
 
         // update current user's profile
         [Authorize]
+        [SwaggerOperation(Summary = "User: Update profile", Description = "Update current user's profile.")]
         [HttpPut("me")]
         public async Task<IActionResult> UpdateProfile([FromBody] UpdateProfileRequest request)
         {
@@ -153,6 +163,7 @@ namespace BookingWebApi.Controllers
 
         // change password
         [Authorize]
+        [SwaggerOperation(Summary = "User: Change password", Description = "Change current user's password.")]
         [HttpPut("me/change-password")]
         public async Task<IActionResult> ChangePassword([FromBody] ChangePasswordRequest request)
         {

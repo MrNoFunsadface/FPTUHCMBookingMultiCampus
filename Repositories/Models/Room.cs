@@ -20,6 +20,7 @@ public partial class Room
 
     public bool IsAvailable { get; set; }
 
+    [JsonIgnore]
     public virtual Campus Campus { get; set; }
 
     [JsonIgnore]
